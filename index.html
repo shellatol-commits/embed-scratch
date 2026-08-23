@@ -290,6 +290,38 @@
             border: 1px solid #e0e0e0;
         }
 
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         @media (max-width: 480px) {
             .embed-buttons {
                 grid-template-columns: 1fr;
@@ -306,6 +338,10 @@
             .input-group {
                 flex-direction: column;
             }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
@@ -314,59 +350,122 @@
         <h1>🎨 Embed Scratch</h1>
         <p class="subtitle">Generate Forkphorus embeds for Scratch projects.</p>
         
-        <div class="input-section">
-            <input type="text" id="projectInput" placeholder="Enter Scratch project ID (e.g., 12345678)" />
-            <p class="input-hint">💡 Get the project ID from the URL: scratch.mit.edu/projects/PROJECT_ID</p>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('forkphorus')">Forkphorus</button>
+            <button class="tab-btn" onclick="switchTab('embed-scratch')">Embed Scratch Link</button>
         </div>
 
-        <div class="options-section">
-            <div class="option-item">
-                <input type="checkbox" id="autoStart" checked>
-                <label for="autoStart">Auto-start project</label>
+        <!-- Forkphorus Tab -->
+        <div class="tab-content active" id="forkphorus-tab">
+            <div class="input-section">
+                <input type="text" id="projectInput" placeholder="Enter Scratch project ID (e.g., 12345678)" />
+                <p class="input-hint">💡 Get the project ID from the URL: scratch.mit.edu/projects/PROJECT_ID</p>
             </div>
-            <div class="option-item">
-                <input type="checkbox" id="lightContent">
-                <label for="lightContent">Light content mode</label>
+
+            <div class="options-section">
+                <div class="option-item">
+                    <input type="checkbox" id="autoStart" checked>
+                    <label for="autoStart">Auto-start project</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="lightContent">
+                    <label for="lightContent">Light content mode</label>
+                </div>
             </div>
-        </div>
-        
-        <div class="embed-buttons">
-            <div class="embed-btn">
-                <button onclick="toggleMenu(this)">
-                    <span class="icon">📂</span>
-                    <span>Open</span>
-                </button>
-                <div class="menu">
-                    <div class="menu-item" onclick="openForkphorus()">Open in Forkphorus</div>
-                    <div class="menu-item" onclick="openScratch()">Open in Scratch</div>
+            
+            <div class="embed-buttons">
+                <div class="embed-btn">
+                    <button onclick="toggleMenu(this)">
+                        <span class="icon">📂</span>
+                        <span>Open</span>
+                    </button>
+                    <div class="menu">
+                        <div class="menu-item" onclick="openForkphorus()">Open in Forkphorus</div>
+                        <div class="menu-item" onclick="openScratch()">Open in Scratch</div>
+                    </div>
+                </div>
+
+                <div class="embed-btn">
+                    <button onclick="toggleMenu(this)">
+                        <span class="icon">🔗</span>
+                        <span>Put in your Site</span>
+                    </button>
+                    <div class="menu">
+                        <div class="menu-item" onclick="generateIframe()">Generate Iframe</div>
+                        <div class="menu-item" onclick="generateEmbed()">Generate Embed Link</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="embed-btn">
-                <button onclick="toggleMenu(this)">
-                    <span class="icon">🔗</span>
-                    <span>Put in your Site</span>
-                </button>
-                <div class="menu">
-                    <div class="menu-item" onclick="generateIframe()">Generate Iframe</div>
-                    <div class="menu-item" onclick="generateEmbed()">Generate Embed Link</div>
+            <div class="output-section" id="outputSection">
+                <div class="output-title" id="outputTitle">Embed Code</div>
+                <div class="output-box" id="outputBox"></div>
+                <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                <div class="success-message" id="successMessage">✓ Copied to clipboard!</div>
+                <div class="preview-section" id="previewSection" style="display:none;">
+                    <p>Preview:</p>
+                    <div id="previewContainer"></div>
                 </div>
             </div>
         </div>
 
-        <div class="output-section" id="outputSection">
-            <div class="output-title" id="outputTitle">Embed Code</div>
-            <div class="output-box" id="outputBox"></div>
-            <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
-            <div class="success-message" id="successMessage">✓ Copied to clipboard!</div>
-            <div class="preview-section" id="previewSection" style="display:none;">
-                <p>Preview:</p>
-                <div id="previewContainer"></div>
+        <!-- Embed Scratch Tab -->
+        <div class="tab-content" id="embed-scratch-tab">
+            <div class="input-section">
+                <input type="text" id="embedProjectInput" placeholder="Enter Scratch project ID (e.g., 12345678)" />
+                <p class="input-hint">💡 Get the project ID from the URL: scratch.mit.edu/projects/PROJECT_ID</p>
+            </div>
+
+            <div class="options-section">
+                <div class="option-item">
+                    <input type="checkbox" id="embedAutoStart" checked>
+                    <label for="embedAutoStart">Auto-start project</label>
+                </div>
+                <div class="option-item">
+                    <input type="checkbox" id="embedLightContent">
+                    <label for="embedLightContent">Light content mode</label>
+                </div>
+            </div>
+            
+            <div class="embed-buttons">
+                <div class="embed-btn">
+                    <button onclick="toggleMenu(this)">
+                        <span class="icon">📂</span>
+                        <span>Open</span>
+                    </button>
+                    <div class="menu">
+                        <div class="menu-item" onclick="openEmbedScratch()">Open in Embed Scratch</div>
+                        <div class="menu-item" onclick="openScratchFromEmbed()">Open in Scratch</div>
+                    </div>
+                </div>
+
+                <div class="embed-btn">
+                    <button onclick="toggleMenu(this)">
+                        <span class="icon">🔗</span>
+                        <span>Put in your Site</span>
+                    </button>
+                    <div class="menu">
+                        <div class="menu-item" onclick="generateEmbedScratchIframe()">Generate Iframe</div>
+                        <div class="menu-item" onclick="generateEmbedScratchLink()">Generate Embed Link</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section" id="outputSectionEmbed">
+                <div class="output-title" id="outputTitleEmbed">Embed Code</div>
+                <div class="output-box" id="outputBoxEmbed"></div>
+                <button class="copy-btn" onclick="copyToClipboardEmbed()">📋 Copy to Clipboard</button>
+                <div class="success-message" id="successMessageEmbed">✓ Copied to clipboard!</div>
+                <div class="preview-section" id="previewSectionEmbed" style="display:none;">
+                    <p>Preview:</p>
+                    <div id="previewContainerEmbed"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Forkphorus variables
         const projectInput = document.getElementById('projectInput');
         const autoStart = document.getElementById('autoStart');
         const lightContent = document.getElementById('lightContent');
@@ -377,6 +476,33 @@
         const previewSection = document.getElementById('previewSection');
         const previewContainer = document.getElementById('previewContainer');
 
+        // Embed Scratch variables
+        const embedProjectInput = document.getElementById('embedProjectInput');
+        const embedAutoStart = document.getElementById('embedAutoStart');
+        const embedLightContent = document.getElementById('embedLightContent');
+        const outputSectionEmbed = document.getElementById('outputSectionEmbed');
+        const outputBoxEmbed = document.getElementById('outputBoxEmbed');
+        const outputTitleEmbed = document.getElementById('outputTitleEmbed');
+        const successMessageEmbed = document.getElementById('successMessageEmbed');
+        const previewSectionEmbed = document.getElementById('previewSectionEmbed');
+        const previewContainerEmbed = document.getElementById('previewContainerEmbed');
+
+        // Get base URL for Embed Scratch
+        function getEmbedScratchBaseUrl() {
+            return window.location.origin + window.location.pathname.replace('index.html', '');
+        }
+
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tab + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Forkphorus functions
         function getProjectId() {
             const id = projectInput.value.trim();
             if (!id) {
@@ -432,7 +558,7 @@
             if (projectId) {
                 const embedUrl = getEmbedUrl(projectId);
                 const iframeCode = `<iframe src="${embedUrl}" width="482" height="393" allowfullscreen="true" allowtransparency="true" style="border:none;"></iframe>`;
-                displayOutput('Iframe Code', iframeCode, embedUrl);
+                displayOutput('Iframe Code', iframeCode, embedUrl, false);
             }
             closeMenus();
         }
@@ -441,23 +567,36 @@
             const projectId = getProjectId();
             if (projectId) {
                 const embedUrl = getEmbedUrl(projectId);
-                displayOutput('Embed Link', embedUrl, embedUrl);
+                displayOutput('Embed Link', embedUrl, embedUrl, false);
             }
             closeMenus();
         }
 
-        function displayOutput(title, content, embedUrl) {
-            outputTitle.textContent = title;
-            outputBox.textContent = content;
-            outputSection.classList.add('active');
-            successMessage.classList.remove('show');
+        function displayOutput(title, content, embedUrl, isEmbedScratch) {
+            if (isEmbedScratch) {
+                outputTitleEmbed.textContent = title;
+                outputBoxEmbed.textContent = content;
+                outputSectionEmbed.classList.add('active');
+                successMessageEmbed.classList.remove('show');
 
-            // Show preview for iframe
-            if (title === 'Iframe Code') {
-                previewSection.style.display = 'block';
-                previewContainer.innerHTML = `<iframe src="${embedUrl}" width="482" height="393" allowfullscreen="true" allowtransparency="true" style="border:none;"></iframe>`;
+                if (title === 'Iframe Code') {
+                    previewSectionEmbed.style.display = 'block';
+                    previewContainerEmbed.innerHTML = `<iframe src="${embedUrl}" width="482" height="393" allowfullscreen="true" allowtransparency="true" style="border:none;"></iframe>`;
+                } else {
+                    previewSectionEmbed.style.display = 'none';
+                }
             } else {
-                previewSection.style.display = 'none';
+                outputTitle.textContent = title;
+                outputBox.textContent = content;
+                outputSection.classList.add('active');
+                successMessage.classList.remove('show');
+
+                if (title === 'Iframe Code') {
+                    previewSection.style.display = 'block';
+                    previewContainer.innerHTML = `<iframe src="${embedUrl}" width="482" height="393" allowfullscreen="true" allowtransparency="true" style="border:none;"></iframe>`;
+                } else {
+                    previewSection.style.display = 'none';
+                }
             }
         }
 
@@ -467,6 +606,74 @@
                 successMessage.classList.add('show');
                 setTimeout(() => {
                     successMessage.classList.remove('show');
+                }, 2000);
+            }).catch(() => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        // Embed Scratch functions
+        function getEmbedProjectId() {
+            const id = embedProjectInput.value.trim();
+            if (!id) {
+                alert('Please enter a Scratch project ID');
+                return null;
+            }
+            if (isNaN(id)) {
+                alert('Project ID must be a number');
+                return null;
+            }
+            return id;
+        }
+
+        function getEmbedScratchUrl(projectId) {
+            const autoStartParam = embedAutoStart.checked ? 'true' : 'false';
+            const lightContentParam = embedLightContent.checked ? 'true' : 'false';
+            const baseUrl = getEmbedScratchBaseUrl();
+            return `${baseUrl}loader.html#${projectId}?auto-start=${autoStartParam}&light-content=${lightContentParam}`;
+        }
+
+        function openEmbedScratch() {
+            const projectId = getEmbedProjectId();
+            if (projectId) {
+                window.open(getEmbedScratchUrl(projectId), '_blank');
+            }
+            closeMenus();
+        }
+
+        function openScratchFromEmbed() {
+            const projectId = getEmbedProjectId();
+            if (projectId) {
+                window.open(`https://scratch.mit.edu/projects/${projectId}`, '_blank');
+            }
+            closeMenus();
+        }
+
+        function generateEmbedScratchIframe() {
+            const projectId = getEmbedProjectId();
+            if (projectId) {
+                const embedUrl = getEmbedScratchUrl(projectId);
+                const iframeCode = `<iframe src="${embedUrl}" width="482" height="393" allowfullscreen="true" allowtransparency="true" style="border:none;"></iframe>`;
+                displayOutput('Iframe Code', iframeCode, embedUrl, true);
+            }
+            closeMenus();
+        }
+
+        function generateEmbedScratchLink() {
+            const projectId = getEmbedProjectId();
+            if (projectId) {
+                const embedUrl = getEmbedScratchUrl(projectId);
+                displayOutput('Embed Link', embedUrl, embedUrl, true);
+            }
+            closeMenus();
+        }
+
+        function copyToClipboardEmbed() {
+            const text = outputBoxEmbed.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                successMessageEmbed.classList.add('show');
+                setTimeout(() => {
+                    successMessageEmbed.classList.remove('show');
                 }, 2000);
             }).catch(() => {
                 alert('Failed to copy to clipboard');
@@ -486,10 +693,16 @@
             }
         });
 
-        // Allow Enter key to trigger actions
+        // Allow Enter key in both input fields
         projectInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 openForkphorus();
+            }
+        });
+
+        embedProjectInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                openEmbedScratch();
             }
         });
     </script>
