@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embed Scratch Loader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f2f5;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            position: absolute;
+            color: white;
+            margin-top: 80px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+
+        iframe.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div>
+            <div class="spinner"></div>
+            <div class="loader-text">Loading project...</div>
+        </div>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <iframe id="projectFrame"></iframe>
+
+    <script>
+        // Parse the URL hash and query parameters
+        function parseUrl() {
+            const hash = window.location.hash.substring(1); // Get everything after #
+            const queryPart = window.location.search;
+            
+            // Extract project ID from hash
+            let projectId = null;
+            let params = {};
+
+            if (hash) {
+                // Hash format: #projectId?param=value
+                const hashParts = hash.split('?');
+                projectId = hashParts[0];
+                
+                if (hashParts[1]) {
+                    const queryString = hashParts[1];
+                    const urlParams = new URLSearchParams(queryString);
+                    params.autoStart = urlParams.get('auto-start') === 'true';
+                    params.lightContent = urlParams.get('light-content') === 'true';
+                }
+            } else if (queryPart) {
+                // Fallback: try to get from query parameters
+                const urlParams = new URLSearchParams(queryPart);
+                projectId = urlParams.get('id');
+                params.autoStart = urlParams.get('auto-start') === 'true';
+                params.lightContent = urlParams.get('light-content') === 'true';
+            }
+
+            return { projectId, params };
+        }
+
+        function showError(message) {
+            const loader = document.getElementById('loader');
+            const errorDiv = document.getElementById('error');
+            
+            loader.style.display = 'none';
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function loadProject(projectId, params) {
+            // Validate project ID
+            if (!projectId || isNaN(projectId)) {
+                showError('❌ Invalid project ID. Please use a valid Scratch project ID.');
+                return;
+            }
+
+            // Build Forkphorus embed URL
+            const autoStartParam = params.autoStart ? 'true' : 'false';
+            const lightContentParam = params.lightContent ? 'true' : 'false';
+            const embedUrl = `https://forkphorus.github.io/embed.html?id=${projectId}&auto-start=${autoStartParam}&light-content=${lightContentParam}`;
+
+            // Set iframe source
+            const iframe = document.getElementById('projectFrame');
+            iframe.src = embedUrl;
+
+            // Show iframe and hide loader when it loads
+            iframe.onload = function() {
+                document.getElementById('loader').style.display = 'none';
+                iframe.classList.add('show');
+            };
+
+            // Handle iframe load errors
+            iframe.onerror = function() {
+                showError('❌ Failed to load project. Please check the project ID and try again.');
+            };
+
+            // Fallback: hide loader after 3 seconds even if iframe doesn't fire onload
+            setTimeout(() => {
+                if (!iframe.classList.contains('show')) {
+                    document.getElementById('loader').style.display = 'none';
+                    iframe.classList.add('show');
+                }
+            }, 3000);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            const { projectId, params } = parseUrl();
+
+            if (projectId) {
+                loadProject(projectId, params);
+            } else {
+                showError('❌ No project ID provided. Use format: loader.html#projectId?auto-start=true&light-content=false');
+            }
+        });
+
+        // Allow URL updates
+        window.addEventListener('hashchange', () => {
+            const { projectId, params } = parseUrl();
+            if (projectId) {
+                document.getElementById('error').classList.remove('show');
+                document.getElementById('loader').style.display = 'flex';
+                const iframe = document.getElementById('projectFrame');
+                iframe.classList.remove('show');
+                loadProject(projectId, params);
+            }
+        });
+    </script>
+</body>
+</html>
