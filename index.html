@@ -628,7 +628,7 @@
 
         function getEmbedScratchUrl(projectId) {
             const autoStartParam = embedAutoStart.checked ? 'true' : 'false';
-            const lightContentParam = embedDarkMode.checked ? 'true' : 'false';
+            const lightContentParam = embedDarkMode.checked ? 'false' : 'true';
             const baseUrl = getEmbedScratchBaseUrl();
             return `${baseUrl}loader.html#${projectId}?auto-start=${autoStartParam}&light-content=${lightContentParam}`;
         }
