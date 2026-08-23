@@ -26,7 +26,7 @@
             border-radius: 12px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
 
@@ -42,11 +42,46 @@
             font-size: 16px;
         }
 
+        .input-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 2px solid #e8ebff;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+
         .embed-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .embed-btn {
@@ -127,6 +162,77 @@
             font-size: 18px;
         }
 
+        .output-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e8ebff;
+            display: none;
+            margin-top: 25px;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .output-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .output-box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            word-break: break-all;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
         @media (max-width: 480px) {
             .embed-buttons {
                 grid-template-columns: 1fr;
@@ -139,13 +245,22 @@
             h1 {
                 font-size: 24px;
             }
+
+            .input-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎨 Embed Scratch</h1>
-        <p class="subtitle">Embed Scratch projects into your website with just a few clicks.</p>
+        <p class="subtitle">Generate Forkphorus embeds for Scratch projects.</p>
+        
+        <div class="input-section">
+            <input type="text" id="projectInput" placeholder="Enter Scratch project ID (e.g., 12345678)" />
+            <p class="input-hint">💡 Get the project ID from the URL: scratch.mit.edu/projects/PROJECT_ID</p>
+        </div>
         
         <div class="embed-buttons">
             <div class="embed-btn">
@@ -154,8 +269,8 @@
                     <span>Open</span>
                 </button>
                 <div class="menu">
-                    <div class="menu-item" onclick="handleAction('open-project')">Open Project</div>
-                    <div class="menu-item" onclick="handleAction('open-file')">Open File</div>
+                    <div class="menu-item" onclick="openForkphorus()">Open in Forkphorus</div>
+                    <div class="menu-item" onclick="openScratch()">Open in Scratch</div>
                 </div>
             </div>
 
@@ -165,14 +280,40 @@
                     <span>Put in your Site</span>
                 </button>
                 <div class="menu">
-                    <div class="menu-item" onclick="handleAction('generate-embed')">Generate Embed Code</div>
-                    <div class="menu-item" onclick="handleAction('copy-embed')">Copy to Clipboard</div>
+                    <div class="menu-item" onclick="generateIframe()">Generate Iframe</div>
+                    <div class="menu-item" onclick="generateEmbed()">Generate Embed Link</div>
                 </div>
             </div>
+        </div>
+
+        <div class="output-section" id="outputSection">
+            <div class="output-title" id="outputTitle">Embed Code</div>
+            <div class="output-box" id="outputBox"></div>
+            <button class="copy-btn" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+            <div class="success-message" id="successMessage">✓ Copied to clipboard!</div>
         </div>
     </div>
 
     <script>
+        const projectInput = document.getElementById('projectInput');
+        const outputSection = document.getElementById('outputSection');
+        const outputBox = document.getElementById('outputBox');
+        const outputTitle = document.getElementById('outputTitle');
+        const successMessage = document.getElementById('successMessage');
+
+        function getProjectId() {
+            const id = projectInput.value.trim();
+            if (!id) {
+                alert('Please enter a Scratch project ID');
+                return null;
+            }
+            if (isNaN(id)) {
+                alert('Project ID must be a number');
+                return null;
+            }
+            return id;
+        }
+
         function toggleMenu(button) {
             const embedBtn = button.parentElement;
             const isActive = embedBtn.classList.contains('active');
@@ -188,33 +329,76 @@
             embedBtn.classList.toggle('active');
         }
 
-        function handleAction(action) {
-            console.log('Action triggered:', action);
-            
-            switch(action) {
-                case 'open-project':
-                    alert('Open Project - Feature coming soon!');
-                    break;
-                case 'open-file':
-                    alert('Open File - Feature coming soon!');
-                    break;
-                case 'generate-embed':
-                    alert('Generate Embed Code - Feature coming soon!');
-                    break;
-                case 'copy-embed':
-                    alert('Copy to Clipboard - Feature coming soon!');
-                    break;
-                default:
-                    console.log('Unknown action');
+        function openForkphorus() {
+            const projectId = getProjectId();
+            if (projectId) {
+                window.open(`https://forkphorus.github.io/?id=${projectId}`, '_blank');
             }
+            closeMenus();
+        }
+
+        function openScratch() {
+            const projectId = getProjectId();
+            if (projectId) {
+                window.open(`https://scratch.mit.edu/projects/${projectId}`, '_blank');
+            }
+            closeMenus();
+        }
+
+        function generateIframe() {
+            const projectId = getProjectId();
+            if (projectId) {
+                const iframeCode = `<iframe src="https://forkphorus.github.io/?id=${projectId}" width="485" height="402" allowfullscreen></iframe>`;
+                displayOutput('Iframe Code', iframeCode);
+            }
+            closeMenus();
+        }
+
+        function generateEmbed() {
+            const projectId = getProjectId();
+            if (projectId) {
+                const embedUrl = `https://forkphorus.github.io/?id=${projectId}`;
+                displayOutput('Embed Link', embedUrl);
+            }
+            closeMenus();
+        }
+
+        function displayOutput(title, content) {
+            outputTitle.textContent = title;
+            outputBox.textContent = content;
+            outputSection.classList.add('active');
+            successMessage.classList.remove('show');
+        }
+
+        function copyToClipboard() {
+            const text = outputBox.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                successMessage.classList.add('show');
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 2000);
+            }).catch(() => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function closeMenus() {
+            document.querySelectorAll('.embed-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
         }
 
         // Close menus when clicking outside
         document.addEventListener('click', function(event) {
             if (!event.target.closest('.embed-btn')) {
-                document.querySelectorAll('.embed-btn.active').forEach(btn => {
-                    btn.classList.remove('active');
-                });
+                closeMenus();
+            }
+        });
+
+        // Allow Enter key to trigger actions
+        projectInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                openForkphorus();
             }
         });
     </script>
