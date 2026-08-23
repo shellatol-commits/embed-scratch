@@ -368,8 +368,8 @@
                     <label for="autoStart">Auto-start project</label>
                 </div>
                 <div class="option-item">
-                    <input type="checkbox" id="lightContent">
-                    <label for="lightContent">Light content mode</label>
+                    <input type="checkbox" id="darkMode">
+                    <label for="darkMode">Dark mode (light-content disabled)</label>
                 </div>
             </div>
             
@@ -422,8 +422,8 @@
                     <label for="embedAutoStart">Auto-start project</label>
                 </div>
                 <div class="option-item">
-                    <input type="checkbox" id="embedLightContent">
-                    <label for="embedLightContent">Light content mode</label>
+                    <input type="checkbox" id="embedDarkMode">
+                    <label for="embedDarkMode">Dark mode (light-content disabled)</label>
                 </div>
             </div>
             
@@ -468,7 +468,7 @@
         // Forkphorus variables
         const projectInput = document.getElementById('projectInput');
         const autoStart = document.getElementById('autoStart');
-        const lightContent = document.getElementById('lightContent');
+        const darkMode = document.getElementById('darkMode');
         const outputSection = document.getElementById('outputSection');
         const outputBox = document.getElementById('outputBox');
         const outputTitle = document.getElementById('outputTitle');
@@ -479,7 +479,7 @@
         // Embed Scratch variables
         const embedProjectInput = document.getElementById('embedProjectInput');
         const embedAutoStart = document.getElementById('embedAutoStart');
-        const embedLightContent = document.getElementById('embedLightContent');
+        const embedDarkMode = document.getElementById('embedDarkMode');
         const outputSectionEmbed = document.getElementById('outputSectionEmbed');
         const outputBoxEmbed = document.getElementById('outputBoxEmbed');
         const outputTitleEmbed = document.getElementById('outputTitleEmbed');
@@ -518,7 +518,7 @@
 
         function getEmbedUrl(projectId) {
             const autoStartParam = autoStart.checked ? 'true' : 'false';
-            const lightContentParam = lightContent.checked ? 'true' : 'false';
+            const lightContentParam = darkMode.checked ? 'false' : 'true';
             return `https://forkphorus.github.io/embed.html?id=${projectId}&auto-start=${autoStartParam}&light-content=${lightContentParam}`;
         }
 
@@ -628,7 +628,7 @@
 
         function getEmbedScratchUrl(projectId) {
             const autoStartParam = embedAutoStart.checked ? 'true' : 'false';
-            const lightContentParam = embedLightContent.checked ? 'true' : 'false';
+            const lightContentParam = embedDarkMode.checked ? 'false' : 'true';
             const baseUrl = getEmbedScratchBaseUrl();
             return `${baseUrl}loader.html#${projectId}?auto-start=${autoStartParam}&light-content=${lightContentParam}`;
         }
