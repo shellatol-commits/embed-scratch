@@ -106,7 +106,6 @@
         // Parse the URL hash and query parameters
         function parseUrl() {
             const hash = window.location.hash.substring(1); // Get everything after #
-            const queryPart = window.location.search;
             
             // Extract project ID from hash
             let projectId = null;
@@ -120,15 +119,9 @@
                 if (hashParts[1]) {
                     const queryString = hashParts[1];
                     const urlParams = new URLSearchParams(queryString);
-                    params.autoStart = urlParams.get('auto-start') === 'true';
-                    params.lightContent = urlParams.get('light-content') === 'true';
+                    params.autoStart = urlParams.get('auto-start');
+                    params.lightContent = urlParams.get('light-content');
                 }
-            } else if (queryPart) {
-                // Fallback: try to get from query parameters
-                const urlParams = new URLSearchParams(queryPart);
-                projectId = urlParams.get('id');
-                params.autoStart = urlParams.get('auto-start') === 'true';
-                params.lightContent = urlParams.get('light-content') === 'true';
             }
 
             return { projectId, params };
@@ -150,9 +143,9 @@
                 return;
             }
 
-            // Build Forkphorus embed URL
-            const autoStartParam = params.autoStart ? 'true' : 'false';
-            const lightContentParam = params.lightContent ? 'true' : 'false';
+            // Build Forkphorus embed URL - pass through params as-is from index.html
+            const autoStartParam = params.autoStart || 'true';
+            const lightContentParam = params.lightContent || 'false';
             const embedUrl = `https://forkphorus.github.io/embed.html?id=${projectId}&auto-start=${autoStartParam}&light-content=${lightContentParam}`;
 
             // Set iframe source
